@@ -23,3 +23,18 @@
 - Auth router (register, login, refresh, logout)
 - Dependency for protected routes
 
+**Phase 2:  Graph Engine & Attack Analysis**
+
+- [ ]  Graph Infrastructure
+- NetworkNode and NetworkEdge models
+- Graph Engine with NetworkX integration
+- Topology ingestion from JSON payloads
+- Node risk scoring algorithm
+- Edge weight calculation (CVSS, exploitability, patch factor)
+
+- [ ]  Attack Path Engine
+- Path discovery algorithm (DFS/BFS with depth limits)
+- Path risk ranking and scoring
+- Top-N path filtering
+- Attack Path storage models
+- Snapshot system for analysis history
