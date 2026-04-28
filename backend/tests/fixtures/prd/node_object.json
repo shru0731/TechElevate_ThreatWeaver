@@ -1,0 +1,34 @@
+{
+  "id": "node-001",
+  "ip": "10.0.0.15",
+  "hostname": "app-server-01",
+  "type": "HOST",
+  "os": "Ubuntu 22.04",
+  "services": [
+    {
+      "port": 443,
+      "protocol": "tcp",
+      "service": "https",
+      "version": "nginx/1.24.0"
+    },
+    {
+      "port": 22,
+      "protocol": "tcp",
+      "service": "ssh",
+      "version": "OpenSSH_9.0"
+    }
+  ],
+  "criticality": "HIGH",
+  "criticality_weight": 7,
+  "cve_list": [
+    "CVE-2024-12345",
+    "CVE-2024-54321"
+  ],
+  "nrs": 72.5,
+  "patch_status": "PARTIALLY_PATCHED",
+  "network_segment": "dmz",
+  "coordinates": {
+    "x": 120.5,
+    "y": 340.25
+  }
+}

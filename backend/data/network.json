@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"id": "A", "type": "user", "vuln": 7},
+    {"id": "B", "type": "server", "vuln": 9},
+    {"id": "C", "type": "database", "vuln": 5}
+  ],
+  "edges": [
+    {"source": "A", "target": "B"},
+    {"source": "B", "target": "C"}
+  ]
+}

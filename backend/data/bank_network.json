@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "id": "PhishingInbox",
+      "type": "external_entry",
+      "vuln": 8.2,
+      "criticality": "MEDIUM",
+      "exposure": 9,
+      "cves": ["CVE-2024-21413"]
+    },
+    {
+      "id": "EmployeeLaptop",
+      "type": "user_endpoint",
+      "vuln": 7.8,
+      "criticality": "MEDIUM",
+      "exposure": 8,
+      "cves": ["CVE-2023-23397"],
+      "exploit_in_wild": true
+    },
+    {
+      "id": "AppServer",
+      "type": "application_server",
+      "vuln": 9.1,
+      "criticality": "HIGH",
+      "exposure": 7,
+      "cves": ["CVE-2024-3400"],
+      "exploit_in_wild": true
+    },
+    {
+      "id": "DomainController",
+      "type": "identity",
+      "vuln": 8.7,
+      "criticality": "CRITICAL",
+      "exposure": 6,
+      "cves": ["CVE-2020-1472"]
+    },
+    {
+      "id": "CoreBankDB",
+      "type": "database",
+      "vuln": 9.4,
+      "criticality": "CRITICAL",
+      "exposure": 5,
+      "cves": ["CVE-2023-3519"],
+      "exploit_in_wild": true
+    },
+    {
+      "id": "SOCMonitor",
+      "type": "security_monitor",
+      "vuln": 3.2,
+      "criticality": "HIGH",
+      "exposure": 2
+    }
+  ],
+  "edges": [
+    {
+      "source": "PhishingInbox",
+      "target": "EmployeeLaptop",
+      "cvss": 8.2,
+      "patch_factor": 1.0
+    },
+    {
+      "source": "EmployeeLaptop",
+      "target": "AppServer",
+      "cvss": 7.8,
+      "patch_factor": 0.9
+    },
+    {
+      "source": "AppServer",
+      "target": "DomainController",
+      "cvss": 8.7,
+      "patch_factor": 0.8
+    },
+    {
+      "source": "DomainController",
+      "target": "CoreBankDB",
+      "cvss": 9.3,
+      "patch_factor": 0.9
+    },
+    {
+      "source": "AppServer",
+      "target": "CoreBankDB",
+      "cvss": 9.1,
+      "patch_factor": 1.0
+    },
+    {
+      "source": "AppServer",
+      "target": "SOCMonitor",
+      "cvss": 4.3,
+      "patch_factor": 0.5
+    }
+  ]
+}

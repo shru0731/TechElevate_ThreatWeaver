@@ -1,0 +1,14 @@
+{
+  "id": "edge-001",
+  "source": "node-001",
+  "target": "node-002",
+  "protocol": "tcp",
+  "cve_id": "CVE-2024-12345",
+  "attack_type": "remote_code_execution",
+  "mitre_technique": "T1190",
+  "etp": 0.82,
+  "weight": 0.18,
+  "requires_auth": false,
+  "exploit_in_wild": true,
+  "direction": "unidirectional"
+}
