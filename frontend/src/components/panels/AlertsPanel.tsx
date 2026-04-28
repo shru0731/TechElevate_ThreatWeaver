@@ -1,8 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setActivePath } from "../../features/paths/pathsSlice";
 import { fetchRemediation } from "../../features/remediation/remediationSlice";
-import { setActivePanel } from "../../features/ui/uiSlice";
 import { AttackPath } from "../../types";
 
 const AlertsPanel: React.FC<{ onPathSelect: (path: AttackPath) => void }> = ({ onPathSelect }) => {
@@ -13,15 +13,26 @@ const AlertsPanel: React.FC<{ onPathSelect: (path: AttackPath) => void }> = ({ o
 
   const getLabel = (id: string) => nodes.find((n) => n.id === id)?.label || id;
 
+  const formatRisk = (risk: number | undefined) =>
+    Number.isFinite(risk) ? risk.toFixed(1) : "N/A";
+
+  const formatLikelihood = (likelihood: number | undefined) =>
+    Number.isFinite(likelihood) ? `${(likelihood * 100).toFixed(0)}%` : "N/A";
+
+  const getSafeNodes = (path: AttackPath) =>
+    Array.isArray(path.nodes) ? path.nodes : [];
+
   const criticalPaths = paths.filter((p) => p.risk >= 90);
   const highPaths = paths.filter((p) => p.risk >= 75 && p.risk < 90);
   const medPaths = paths.filter((p) => p.risk < 75);
+
+  const navigate = useNavigate();
 
   const handleAlertClick = (path: AttackPath) => {
     dispatch(setActivePath(path.id));
     onPathSelect(path);
     dispatch(fetchRemediation(path.id));
-    dispatch(setActivePanel("remediation"));
+    navigate("/remediation");
   };
 
   if (paths.length === 0) {
@@ -45,7 +56,7 @@ const AlertsPanel: React.FC<{ onPathSelect: (path: AttackPath) => void }> = ({ o
           <div>
             <p className="text-xs font-display font-bold text-danger">Network Risk Elevated</p>
             <p className="text-[10px] font-mono text-text-secondary mt-0.5">
-              GNRI score of {gnri.toFixed(1)} indicates significant exposure across the network.
+              GNRI score of {Number.isFinite(gnri) ? gnri.toFixed(1) : "N/A"} indicates significant exposure across the network.
             </p>
           </div>
         </div>
@@ -159,23 +170,23 @@ const AlertCard: React.FC<{
           <span className="w-2 h-2 rounded-full bg-danger animate-pulse" />
         )}
         <span className={`text-sm font-display font-bold ${SEVERITY_SCORE_COLOR[severity]}`}>
-          {path.risk.toFixed(1)}
+          {formatRisk(path.risk)}
         </span>
         <span className="text-[9px] font-mono text-text-dim">risk score</span>
       </div>
       <span className="text-[9px] font-mono text-text-dim">
-        {(path.likelihood * 100).toFixed(0)}% likely
+        {formatLikelihood(path.likelihood)} likely
       </span>
     </div>
     <div className="flex items-center gap-1 flex-wrap">
-      {path.nodes.slice(0, 4).map((nodeId, ni, arr) => (
+      {getSafeNodes(path).slice(0, 4).map((nodeId, ni, arr) => (
         <React.Fragment key={nodeId}>
           <span className="text-[9px] font-mono text-text-dim">{getLabel(nodeId)}</span>
           {ni < arr.length - 1 && <span className="text-[9px] text-text-dim">›</span>}
         </React.Fragment>
       ))}
-      {path.nodes.length > 4 && (
-        <span className="text-[9px] font-mono text-text-dim">+{path.nodes.length - 4}</span>
+      {getSafeNodes(path).length > 4 && (
+        <span className="text-[9px] font-mono text-text-dim">+{getSafeNodes(path).length - 4}</span>
       )}
     </div>
   </div>

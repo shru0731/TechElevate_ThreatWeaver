@@ -1,8 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { setActivePath } from "../../features/paths/pathsSlice";
 import { fetchRemediation } from "../../features/remediation/remediationSlice";
-import { setActivePanel } from "../../features/ui/uiSlice";
 import { AttackPath } from "../../types";
 
 const riskBg = (risk: number) => {
@@ -29,15 +29,29 @@ const AttackPathsPanel: React.FC<Props> = ({ onPathSelect }) => {
   const getLabel = (id: string) =>
     nodes.find((n) => n.id === id)?.label || id;
 
+  const formatRisk = (risk: number | undefined) =>
+    Number.isFinite(risk) ? risk.toFixed(1) : "N/A";
+
+  const formatLikelihood = (likelihood: number | undefined) =>
+    Number.isFinite(likelihood) ? `${(likelihood * 100).toFixed(0)}%` : "N/A";
+
+  const getSafeRisk = (risk: number | undefined) =>
+    Number.isFinite(risk) ? risk : 0;
+
+  const getSafeLikelihood = (likelihood: number | undefined) =>
+    Number.isFinite(likelihood) ? Math.max(0, Math.min(1, likelihood)) : 0;
+
   const handlePathClick = (path: AttackPath) => {
     dispatch(setActivePath(path.id));
     onPathSelect(path);
   };
 
+  const navigate = useNavigate();
+
   const handleRemediate = (e: React.MouseEvent, pathId: string) => {
     e.stopPropagation();
     dispatch(fetchRemediation(pathId));
-    dispatch(setActivePanel("remediation"));
+    navigate("/remediation");
   };
 
   if (loading) {
@@ -88,28 +102,28 @@ const AttackPathsPanel: React.FC<Props> = ({ onPathSelect }) => {
               <div className="flex items-center gap-2">
                 <span className="text-[9px] font-mono text-text-dim w-4">{idx + 1}</span>
                 <span
-                  className={`text-xl font-display font-bold leading-none ${riskText(path.risk)}`}
+                  className={`text-xl font-display font-bold leading-none ${riskText(getSafeRisk(path.risk))}`}
                 >
-                  {path.risk.toFixed(1)}
+                  {formatRisk(path.risk)}
                 </span>
                 <span className="text-[9px] font-mono text-text-dim">risk</span>
               </div>
               <div className="text-right">
                 <div className="text-[9px] font-mono text-text-dim">Likelihood</div>
                 <div className="text-xs font-mono font-bold text-warn">
-                  {(path.likelihood * 100).toFixed(0)}%
+                  {formatLikelihood(path.likelihood)}
                 </div>
               </div>
             </div>
 
             {/* Path visualization */}
             <div className="flex items-center gap-1 flex-wrap mb-3">
-              {path.nodes.map((nodeId, ni) => (
+              {(Array.isArray(path.nodes) ? path.nodes : []).map((nodeId, ni) => (
                 <React.Fragment key={nodeId}>
                   <span className="text-[9px] font-mono bg-surface border border-border px-1.5 py-0.5 rounded text-text-secondary">
                     {getLabel(nodeId)}
                   </span>
-                  {ni < path.nodes.length - 1 && (
+                  {ni < (Array.isArray(path.nodes) ? path.nodes.length : 0) - 1 && (
                     <span className="text-text-dim text-[9px]">→</span>
                   )}
                 </React.Fragment>
@@ -121,8 +135,13 @@ const AttackPathsPanel: React.FC<Props> = ({ onPathSelect }) => {
               <div
                 className="h-full rounded-full"
                 style={{
-                  width: `${path.likelihood * 100}%`,
-                  backgroundColor: path.risk >= 90 ? "#ff2d55" : path.risk >= 75 ? "#ff9f0a" : "#ffd60a",
+                  width: `${getSafeLikelihood(path.likelihood) * 100}%`,
+                  backgroundColor:
+                    getSafeRisk(path.risk) >= 90
+                      ? "#ff2d55"
+                      : getSafeRisk(path.risk) >= 75
+                      ? "#ff9f0a"
+                      : "#ffd60a",
                 }}
               />
             </div>

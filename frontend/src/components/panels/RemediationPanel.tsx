@@ -3,6 +3,8 @@ import { useAppSelector } from "../../hooks/redux";
 import { RemediationPlan } from "../../types";
 
 const RemediationPanel: React.FC = () => {
+  const formatConfidence = (confidence: number | undefined) =>
+    Number.isFinite(confidence) ? confidence.toFixed(2) : "N/A";
   const { plans, activePlanId, loading } = useAppSelector((s) => s.remediation);
   const paths = useAppSelector((s) => s.paths.paths);
   const plan: RemediationPlan | null = activePlanId ? plans[activePlanId] : null;
@@ -11,6 +13,12 @@ const RemediationPanel: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-3 p-1">
+        <div className="rounded-xl border border-border bg-panel/50 p-4">
+          <p className="text-sm font-display font-bold text-accent">Generating remediation plan…</p>
+          <p className="text-[10px] font-mono text-text-dim mt-1">
+            The selected attack path is being analyzed and a remediation plan is being created.
+          </p>
+        </div>
         <div className="h-12 bg-panel rounded-xl border border-border animate-pulse" />
         {[...Array(3)].map((_, i) => (
           <div key={i} className="h-28 bg-panel rounded-xl border border-border animate-pulse" />
@@ -53,7 +61,7 @@ const RemediationPanel: React.FC = () => {
             <p className="text-[9px] font-mono text-text-dim">Action Steps</p>
           </div>
           <div>
-            <p className="text-lg font-display font-bold text-safe">{plan.confidence.toFixed(2)}</p>
+            <p className="text-lg font-display font-bold text-safe">{formatConfidence(plan.confidence)}</p>
             <p className="text-[9px] font-mono text-text-dim">Confidence</p>
           </div>
           <div>
