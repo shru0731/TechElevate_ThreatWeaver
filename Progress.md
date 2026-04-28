@@ -38,3 +38,29 @@
 - Top-N path filtering
 - Attack Path storage models
 - Snapshot system for analysis history
+
+**Frontend & Polish**
+
+- [ ]  Frontend Setup
+- React + TypeScript + Vite initialization
+- Redux Toolkit store configuration
+- Tailwind CSS with dark theme
+- Axios API layer with mock fallback
+- Feature slices (analysis, paths, remediation, ui)
+
+- [ ]  Graph Visualization
+- D3 force-directed graph component
+- Zoom/pan interactions
+- Node coloring by risk level
+- Risk arc visualization
+- Node detail popup on click
+- Path highlighting with glow effect
+
+- [ ]  Dashboard & Panels
+- Main Dashboard layout
+- Sidebar with GNRI gauge
+- Attack Paths Panel with risk scores
+- Remediation Panel with categorized steps
+- Alerts Panel with severity grouping
+- StatsBar with live metrics
+- LoadingOverlay, ErrorBanner, ToastContainer
