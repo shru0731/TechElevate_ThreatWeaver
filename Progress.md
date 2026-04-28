@@ -64,3 +64,4 @@
 - Alerts Panel with severity grouping
 - StatsBar with live metrics
 - LoadingOverlay, ErrorBanner, ToastContainer
+- Modifying frontend part,added auth pages
