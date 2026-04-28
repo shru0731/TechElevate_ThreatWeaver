@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+backend/venv/
+
+# Environment and secrets
+.env
+backend/.env
+
+# Logs and local runtime files
+*.log
+backend/uvicorn.out
+backend/uvicorn.err
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test/build artifacts
+.pytest_cache/
+.mypy_cache/
+dist/
+build/
