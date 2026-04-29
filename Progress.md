@@ -74,7 +74,7 @@
 - Fallback rule-based guidance when LLM unavailable
 - RemediationPlan model and storage
 
-  Phase4:Frontend, Visualization & UX (Polished Version)
+  **Phase4:Frontend, Visualization & UX (Polished Version)**
 
 - [ ]  Frontend Setup
 - React + TypeScript + Vite setup completion
