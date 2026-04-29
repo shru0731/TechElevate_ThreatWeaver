@@ -83,7 +83,7 @@
 - Axios API layer with fallback/mock handling
 - Feature-based architecture (analysis, paths, remediation, UI)
 
----
+
 
 - [ ]  Graph Visualization and Interaction
 - D3 force-directed attack graph implementation
@@ -92,7 +92,7 @@
 - Attack path highlighting with step-by-step visualization
 - Interactive node detail panel (CVE, risk, exposure info)
 
----
+
 
 - [ ]  Dashboard and Monitoring UI
 - Central security analytics dashboard
@@ -101,7 +101,7 @@
 - Alerts Panel with severity grouping (High/Medium/Low)
 - Live system metrics widgets (latency, risk stats)
 
----
+
 
 - [ ]  Advance Visualization Layer
 - Attack simulation playback (step-by-step path traversal animation)
@@ -110,7 +110,7 @@
 - “Explain Attack Path” AI interaction button per path/node
 - Exportable SOC-style report view (PDF/JSON export)
 
----
+
 
 - [ ]  Frontend Intelligence Integration
 - LLM response rendering in structured UI format
@@ -118,7 +118,7 @@
 - Human-readable attack chain explanation panel
 - Real-time update sync with backend analysis results
 
----
+
 
 - [ ]  UI/UX polish Layer
 - Loading states for graph + LLM processing
