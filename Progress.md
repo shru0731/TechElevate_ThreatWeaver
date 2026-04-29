@@ -77,7 +77,7 @@
 
   **Phase 4: Frontend, Visualization & UX (Polished Version)**
   
-[ ] Frontend Setup
+-[ ] Frontend Setup
 -React + TypeScript + Vite setup completion
 -Redux Toolkit state management integration
 -Tailwind CSS dark mode UI system
@@ -85,7 +85,7 @@
 -Feature-based architecture (analysis, paths, remediation, UI)
 
 
-[ ] Graph Visualization & Interaction
+-[ ] Graph Visualization & Interaction
 -D3 force-directed attack graph implementation
 -Zoom, pan, and node focus interactions
 -Node coloring based on Node Risk Score (NRS)
@@ -93,7 +93,7 @@
 -Interactive node detail panel (CVE, risk, exposure info)
 
 
-[ ] Dashboard & Monitoring UI
+-[ ] Dashboard & Monitoring UI
 -Central security analytics dashboard
 -Attack Path Ranking Panel (Top-N paths view)
 -AI Remediation Output Panel (structured display)
@@ -101,7 +101,7 @@
 -Live system metrics widgets (latency, risk stats)
 
 
-[ ] Advanced Visualization Layer (IMPORTANT ADDITION)
+-[ ] Advanced Visualization Layer (IMPORTANT ADDITION)
 -Attack simulation playback (step-by-step path traversal animation)
 -Time-based attack graph evolution view (historical changes)
 -Risk heatmap overlay on network graph
@@ -109,14 +109,14 @@
 -Exportable SOC-style report view (PDF/JSON export)
 
 
-[ ]Frontend Intelligence Integration
+-[ ]Frontend Intelligence Integration
 -LLM response rendering in structured UI format
 -Confidence score visualization for remediation suggestions
 -Human-readable attack chain explanation panel
 -Real-time update sync with backend analysis results
 
 
- [ ] UI/UX Polish Layer
+ -[ ] UI/UX Polish Layer
 -Loading states for graph + LLM processing
 -Error boundaries and fallback UI components
 -Toast notification system for alerts
