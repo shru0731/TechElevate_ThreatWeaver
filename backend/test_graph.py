@@ -22,7 +22,7 @@ def main():
     request = AnalysisRequest(entry_node="A")
 
     # Run core analysis (graph, risk, paths)
-    topology, risk_scores, attack_paths = analysis_service.run_core_analysis(request)
+    topology, risk_scores, attack_paths, _ = analysis_service.run_core_analysis(request)
 
     print("\nAll Attack Paths:")
     for path in attack_paths:

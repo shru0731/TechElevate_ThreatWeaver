@@ -48,7 +48,7 @@ def analyze_and_persist(
     current_user: User = Depends(require_analyst_or_admin),
 ) -> PersistedAnalysisResponse:
     try:
-        topology, risk_scores, attack_paths = analysis_service.run_core_analysis(request)
+        topology, risk_scores, attack_paths, _ = analysis_service.run_core_analysis(request)
         remediation = analysis_service.generate_remediation(attack_paths)
         persistence_request = request.model_copy(update={"topology": topology, "user_id": current_user.id})
         snapshot = persistence_service.create_snapshot(db, persistence_request)

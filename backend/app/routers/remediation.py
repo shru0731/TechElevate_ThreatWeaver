@@ -4,14 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
+from app.core.config import get_settings
 from app.models.attack_path import AttackPathRecord
 from app.models.remediation_plan import RemediationPlan
+from app.models.domain import AttackPath
 from app.schemas.remediation import (
     RemediationPlanResponse,
     RemediationTaskQueuedResponse,
     RemediationTaskStatusResponse,
 )
 from app.security import require_analyst_or_admin, require_viewer_or_above
+from app.services.llm_module import LLMModule
+from app.services.persistence_service import PersistenceService
 from app.tasks.tasks import generate_remediation_task
 
 router = APIRouter()
@@ -66,10 +70,12 @@ def generate_remediation_for_path(
 ) -> RemediationTaskQueuedResponse:
     """
     PRD §5.4 / §7.3 – Generate remediation plan for a specific attack path
-    by its database ID. The plan is produced asynchronously via Celery.
+    by its database ID. The plan is produced asynchronously via Celery when configured,
+    or synchronously in background mode when Celery is unavailable.
     """
     from app.tasks.celery_app import celery_app
 
+    settings = get_settings()
     record = db.get(AttackPathRecord, path_id)
     if record is None or record.nodes is None:
         raise HTTPException(
@@ -77,7 +83,6 @@ def generate_remediation_for_path(
             detail="Attack path record not found",
         )
 
-    # Build the path_data payload expected by the remediation task
     path_data = {
         "nodes": record.nodes,
         "score": record.score,
@@ -86,10 +91,31 @@ def generate_remediation_for_path(
         "hops": (record.path_data or {}).get("hops", []),
     }
 
-    if celery_app is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Celery runtime is unavailable",
+    if settings.task_queue_mode == "background" or celery_app is None:
+        attack_path = AttackPath(
+            nodes=path_data["nodes"],
+            score=float(path_data["score"] or 0.0),
+            likelihood=float(path_data["likelihood"] or 0.0),
+            explanation=str(path_data["explanation"] or ""),
+        )
+        plan = LLMModule().generate_remediation([attack_path])
+        persistence = PersistenceService()
+        persistence.persist_attack_path_remediation(
+            db=db,
+            attack_path_record=record,
+            attack_path=attack_path,
+            remediation_data={
+                "summary": plan.summary,
+                "recommended_actions": plan.recommended_actions,
+                "confidence": plan.confidence,
+                "provider": plan.provider,
+            },
+        )
+        db.commit()
+        return RemediationTaskQueuedResponse(
+            task_id=f"sync-{path_id}",
+            status="completed",
+            attack_path_id=path_id,
         )
 
     task = generate_remediation_task.delay(path_id, path_data)
@@ -111,8 +137,35 @@ def get_remediation_status(
     db: Session = Depends(get_db),
     current_user=Depends(require_viewer_or_above),
 ) -> RemediationTaskStatusResponse:
-    """Poll Celery task status for remediation generation."""
+    """Poll task status for remediation generation."""
     from app.tasks.celery_app import celery_app
+
+    if task_id.startswith("sync-"):
+        try:
+            attack_path_id = int(task_id.split("-", 1)[1])
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid sync task id")
+
+        plan = (
+            db.query(RemediationPlan)
+            .filter(RemediationPlan.attack_path_id == attack_path_id)
+            .order_by(RemediationPlan.id.desc())
+            .first()
+        )
+
+        if plan is None:
+            return RemediationTaskStatusResponse(task_id=task_id, status="PENDING")
+
+        return RemediationTaskStatusResponse(
+            task_id=task_id,
+            status="SUCCESS",
+            result={
+                "summary": plan.summary,
+                "recommended_actions": plan.action_items or [],
+                "confidence": plan.confidence,
+                "provider": plan.provider,
+            },
+        )
 
     if celery_app is None:
         raise HTTPException(

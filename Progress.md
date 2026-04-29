@@ -65,3 +65,10 @@
 - StatsBar with live metrics
 - LoadingOverlay, ErrorBanner, ToastContainer
 - Modifying frontend part,added auth pages
+
+- [ ]  LLM Integration
+- LLM module with Groq/Gemini/mock support
+- Remediation generation service
+- Fallback rule-based guidance when LLM unavailable
+- RemediationPlan model and storage
+- /llm/status endpoint for capability reporting

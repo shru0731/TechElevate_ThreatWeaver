@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy.orm import Session
+from weasyprint import HTML
 
 from app.models import ExportRecord, NetworkSnapshot
 from app.services.persistence_service import PersistenceService
@@ -165,29 +166,142 @@ class ExportService:
         return buffer.getvalue()
 
     def _build_pdf(self, payload: dict) -> bytes:
-        text = "\n".join(
-            [
-                "ThreatWeaver Export",
-                f"Snapshot: {payload['snapshot']['name']} (#{payload['snapshot']['id']})",
-                f"Overall Risk: {payload['snapshot']['overall_risk_score']}",
-                "",
-            ]
-            + [
-                f"Path {path['id']}: {' -> '.join(path['nodes'])} | score={path['score']} | likelihood={path['likelihood']}"
-                for path in payload["attack_paths"]
-            ]
-        )
-        sanitized = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
-        content = f"BT /F1 12 Tf 72 720 Td ({sanitized}) Tj ET"
-        pdf = (
-            "%PDF-1.4\n"
-            "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n"
-            "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n"
-            "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n"
-            f"4 0 obj << /Length {len(content)} >> stream\n{content}\nendstream endobj\n"
-            "5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n"
-            "xref\n0 6\n0000000000 65535 f \n"
-            "0000000010 00000 n \n0000000063 00000 n \n0000000122 00000 n \n0000000248 00000 n \n0000000000 00000 n \n"
-            "trailer << /Root 1 0 R /Size 6 >>\nstartxref\n0\n%%EOF"
-        )
-        return pdf.encode("utf-8")
+        """Generate a professional PDF report using WeasyPrint."""
+        html_content = self._render_pdf_html(payload)
+        # WeasyPrint expects HTML object; write_pdf returns bytes
+        pdf_bytes = HTML(string=html_content).write_pdf()
+        return pdf_bytes
+
+    def _render_pdf_html(self, payload: dict) -> str:
+        """Create an HTML string for the PDF report."""
+        snapshot = payload["snapshot"]
+        attack_paths = payload["attack_paths"]
+        remediation_plans = payload.get("remediation_plans", [])
+
+        # Build remediation mapping for each attack path
+        remediation_by_path = {rp["attack_path_id"]: rp["items"] for rp in remediation_plans if "attack_path_id" in rp}
+
+        # Create rows for attack paths table
+        path_rows = ""
+        for path in attack_paths:
+            path_id = path["id"]
+            nodes = " → ".join(path.get("nodes", []))
+            score = path.get("score", "N/A")
+            likelihood = path.get("likelihood", "N/A")
+            explanation = path.get("explanation", "")[:300]  # Truncate for table
+            remediations = remediation_by_path.get(path_id, [])
+            remediation_text = "<br>".join([f"• {item['summary']}" for item in remediations[:2]]) if remediations else "—"
+            path_rows += f"""
+        <tr>
+            <td>{path_id}</td>
+            <td>{nodes}</td>
+            <td>{score}</td>
+            <td>{likelihood}</td>
+            <td>{explanation}</td>
+            <td>{remediation_text}</td>
+        </tr>
+            """
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>ThreatWeaver Export – Snapshot {snapshot['id']}</title>
+            <style>
+                @page {{
+                    size: A4;
+                    margin: 2cm;
+                    @top-center {{
+                        content: "ThreatWeaver – Confidential";
+                        font-size: 9pt;
+                        color: #666;
+                    }}
+                    @bottom-center {{
+                        content: "Page " counter(page) " of " counter(pages);
+                        font-size: 9pt;
+                    }}
+                }}
+                body {{
+                    font-family: 'Helvetica', 'Arial', sans-serif;
+                    color: #1e2a3a;
+                    line-height: 1.4;
+                    background: white;
+                }}
+                h1 {{
+                    font-size: 24pt;
+                    border-bottom: 2px solid #0f172a;
+                    padding-bottom: 0.2em;
+                    margin-bottom: 0.5em;
+                }}
+                h2 {{
+                    font-size: 16pt;
+                    margin-top: 1.5em;
+                    background: #f1f5f9;
+                    padding: 0.3em 0.5em;
+                    border-left: 4px solid #3b82f6;
+                }}
+                .risk-score {{
+                    display: inline-block;
+                    padding: 0.2em 0.6em;
+                    border-radius: 12px;
+                    font-weight: bold;
+                    background: #fee2e2;
+                    color: #b91c1c;
+                }}
+                table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 1em 0;
+                    font-size: 9pt;
+                }}
+                th, td {{
+                    border: 1px solid #ccc;
+                    padding: 8px 6px;
+                    text-align: left;
+                    vertical-align: top;
+                }}
+                th {{
+                    background: #e2e8f0;
+                    font-weight: 600;
+                }}
+                tr:nth-child(even) {{
+                    background: #f8fafc;
+                }}
+                .footer {{
+                    font-size: 8pt;
+                    color: #475569;
+                    text-align: center;
+                    margin-top: 2em;
+                    border-top: 1px solid #ccc;
+                    padding-top: 1em;
+                }}
+            </style>
+        </head>
+        <body>
+            <h1>ThreatWeaver Security Report</h1>
+            <p><strong>Snapshot:</strong> {snapshot['name']} (ID {snapshot['id']})<br>
+            <strong>Source Type:</strong> {snapshot.get('source_type', 'N/A')}<br>
+            <strong>Analysis Date:</strong> {snapshot.get('created_at', 'N/A')}</p>
+
+            <h2>Overall Risk Assessment</h2>
+            <p><strong>Global Network Risk Index (GNRI):</strong> 
+            <span class="risk-score">{snapshot.get('overall_risk_score', 'N/A')} / 100</span></p>
+
+            <h2>Attack Paths ({len(attack_paths)})</h2>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Path</th><th>Score</th><th>Likelihood</th><th>Explanation</th><th>Top Remediations</th></tr>
+                </thead>
+                <tbody>
+                    {path_rows}
+                </tbody>
+            </table>
+
+            <div class="footer">
+                Generated by ThreatWeaver • Export ID {snapshot.get('id', '')} • {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}
+            </div>
+        </body>
+        </html>
+        """
+        return html

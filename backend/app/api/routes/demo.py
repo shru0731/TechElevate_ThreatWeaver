@@ -27,7 +27,7 @@ def _build_demo_request() -> AnalysisRequest:
 def demo_story() -> dict:
     service = get_analysis_service()
     request = _build_demo_request()
-    topology, risk_scores, attack_paths = service.run_core_analysis(request)
+    topology, risk_scores, attack_paths, _ = service.run_core_analysis(request)
 
     return {
         "scenario": {

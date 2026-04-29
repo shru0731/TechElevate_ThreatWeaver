@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    container_name: threatweaver-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: threatweaver
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d threatweaver"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: threatweaver-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/threatweaver
+      JWT_SECRET: change-me-in-production
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      TASK_QUEUE_MODE: background
+      REDIS_URL: redis://redis:6379/0
+      ENABLE_REMOTE_LLM: "false"
+      LLM_PROVIDER: groq
+      NMAP_BINARY_PATH: /usr/bin/nmap
+      NMAP_DEFAULT_ARGS: "-sn --open"
+      NMAP_SCAN_TIMEOUT: "300"
+      MONITOR_SCHEDULER_ENABLED: "true"
+      MONITOR_SCHEDULER_POLL_SECONDS: "30"
+      MONITOR_MIN_INTERVAL_SECONDS: "60"
+      MONITOR_DIFF_RISK_DELTA_THRESHOLD: "0.5"
+    command: >
+      sh -c "
+      python -m alembic -c alembic.ini upgrade head &&
+      uvicorn main:app --host 0.0.0.0 --port 8000
+      "
+    working_dir: /app/backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - exports_data:/app/backend/generated_exports
+
+  redis:
+    image: redis:7-bookworm
+    container_name: threatweaver-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  exports_data:
