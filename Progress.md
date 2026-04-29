@@ -66,7 +66,7 @@
 - LoadingOverlay, ErrorBanner, ToastContainer
 - Modifying frontend part,added auth pages
 
-  **Phase 1: Backend** 
+  **Phase 3: Backend** 
 
 - [ ]  LLM Integration
 - LLM module with Groq/Gemini/mock support
@@ -74,3 +74,46 @@
 - Fallback rule-based guidance when LLM unavailable
 - RemediationPlan model and storage
 - /llm/status endpoint for capability reporting
+
+  **Phase 4: Frontend, Visualization & UX (Polished Version)**
+[ ] Frontend Setup
+-React + TypeScript + Vite setup completion
+-Redux Toolkit state management integration
+-Tailwind CSS dark mode UI system
+-Axios API layer with fallback/mock handling
+-Feature-based architecture (analysis, paths, remediation, UI)
+
+[ ] Graph Visualization & Interaction
+-D3 force-directed attack graph implementation
+-Zoom, pan, and node focus interactions
+-Node coloring based on Node Risk Score (NRS)
+-Attack path highlighting with step-by-step visualization
+-Interactive node detail panel (CVE, risk, exposure info)
+
+[ ] Dashboard & Monitoring UI
+-Central security analytics dashboard
+-Attack Path Ranking Panel (Top-N paths view)
+-AI Remediation Output Panel (structured display)
+-Alerts Panel with severity grouping (High/Medium/Low)
+-Live system metrics widgets (latency, risk stats)
+
+[ ] Advanced Visualization Layer (IMPORTANT ADDITION)
+-Attack simulation playback (step-by-step path traversal animation)
+-Time-based attack graph evolution view (historical changes)
+-Risk heatmap overlay on network graph
+-“Explain Attack Path” AI interaction button per path/node
+-Exportable SOC-style report view (PDF/JSON export)
+
+[ ]Frontend Intelligence Integration
+-LLM response rendering in structured UI format
+-Confidence score visualization for remediation suggestions
+-Human-readable attack chain explanation panel
+-Real-time update sync with backend analysis results
+
+ [ ] UI/UX Polish Layer
+-Loading states for graph + LLM processing
+-Error boundaries and fallback UI components
+-Toast notification system for alerts
+-Responsive layout for SOC-style monitoring screens
+-Dark-themed cybersecurity dashboard optimization
+  
