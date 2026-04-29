@@ -66,6 +66,8 @@
 - LoadingOverlay, ErrorBanner, ToastContainer
 - Modifying frontend part,added auth pages
 
+  **Phase 1: Backend** 
+
 - [ ]  LLM Integration
 - LLM module with Groq/Gemini/mock support
 - Remediation generation service
